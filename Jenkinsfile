@@ -9,7 +9,6 @@ pipeline {
     environment {
         SONAR_PROJECT_KEY = 'demo-webapp'
         TOMCAT_URL = 'http://localhost:8081'
-        WAR_FILE = 'target/demo-webapp.war'
     }
 
     stages {
@@ -28,10 +27,10 @@ pipeline {
             }
         }
 
-        stage('Test') {
+        stage('Test & Coverage') {
             steps {
-                echo '🧪 Running unit tests...'
-                sh 'mvn test'
+                echo '🧪 Running tests + generating coverage report...'
+                sh 'mvn verify'
             }
             post {
                 always {

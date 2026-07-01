@@ -6,7 +6,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DevOps Pipeline Demo — Kavya Sri Nallani</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
   <style>
     body { background: #0f172a; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; }
     .hero { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 80px 0 60px; }
@@ -100,7 +100,7 @@
   <h3 class="text-center text-white mb-4">🛠️ Pipeline Tools</h3>
   <div class="row g-4">
     <div class="col-md-3">
-      <a href="http://100.49.158.149:8080" target="_blank" class="tool-card">
+      <a href="http://100.49.158.149:8080" target="_blank" rel="noopener noreferrer" class="tool-card">
         <div class="tool-icon">⚙️</div>
         <div class="tool-name">Jenkins</div>
         <div class="tool-desc">CI/CD Automation Server</div>
@@ -108,7 +108,7 @@
       </a>
     </div>
     <div class="col-md-3">
-      <a href="http://100.49.158.149:9000/dashboard?id=demo-webapp" target="_blank" class="tool-card">
+      <a href="http://100.49.158.149:9000/dashboard?id=demo-webapp" target="_blank" rel="noopener noreferrer" class="tool-card">
         <div class="tool-icon">🔍</div>
         <div class="tool-name">SonarQube</div>
         <div class="tool-desc">Code Quality Analysis</div>
@@ -116,7 +116,7 @@
       </a>
     </div>
     <div class="col-md-3">
-      <a href="https://github.com/kavvyaa1802/devops-project" target="_blank" class="tool-card">
+      <a href="https://github.com/kavvyaa1802/devops-project" target="_blank" rel="noopener noreferrer" class="tool-card">
         <div class="tool-icon">📦</div>
         <div class="tool-name">GitHub</div>
         <div class="tool-desc">Source Code Repository</div>
@@ -182,6 +182,6 @@
   </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
 </body>
 </html>

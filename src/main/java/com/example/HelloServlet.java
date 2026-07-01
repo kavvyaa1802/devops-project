@@ -29,7 +29,7 @@ public class HelloServlet extends HttpServlet {
             String clientIp = req.getRemoteAddr();
 
             out.println("<!DOCTYPE html><html><head><title>Pipeline Servlet</title>");
-            out.println("<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'>");
+            out.println("<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM' crossorigin='anonymous'>");
             out.println("<style>");
             out.println("body{background:#0f172a;color:#e2e8f0;}");
             out.println(".info-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:30px;}");
