@@ -11,7 +11,6 @@ pipeline {
         TOMCAT_URL = 'http://localhost:8081'
         APP_URL = 'http://100.49.158.149:8081/demo-webapp/'
         SONAR_URL = 'http://100.49.158.149:9000/dashboard?id=demo-webapp'
-        SONAR_TOKEN = 'squ_474a851fa42d8bea09978e0334144727f6bf791c'
     }
 
     options {
@@ -51,8 +50,8 @@ pipeline {
                 echo '🔨 Building with Maven...'
                 sh '''
                     mkdir -p src/main/webapp/WEB-INF
-                    printf "build.number=%s\nbuild.timestamp=%s\ngit.author=%s\ngit.commit=%s\napp.version=1.0.%s\n" \
-                        "$BUILD_NUMBER" "$BUILD_TIMESTAMP" "$GIT_AUTHOR" "$GIT_COMMIT_MSG" "$BUILD_NUMBER" \
+                    printf "build.number=%s\nbuild.timestamp=%s\ngit.author=%s\napp.version=1.0.%s\n" \
+                        "$BUILD_NUMBER" "$BUILD_TIMESTAMP" "$GIT_AUTHOR" "$BUILD_NUMBER" \
                         > src/main/webapp/build.properties
                 '''
                 sh 'mvn clean package -DskipTests'
@@ -81,16 +80,23 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo '🔍 Running SonarQube analysis...'
-                withSonarQubeEnv('SonarQube') {
-                    sh '''
-                        mvn sonar:sonar \
-                          -Dsonar.projectKey=demo-webapp \
-                          -Dsonar.projectName=demo-webapp \
-                          -Dsonar.host.url=http://localhost:9000 \
-                          -Dsonar.token=squ_474a851fa42d8bea09978e0334144727f6bf791c \
-                          -Dsonar.java.binaries=target/classes \
-                          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-                    '''
+                withCredentials([string(
+                    credentialsId: 'sonar-token-secret',
+                    variable: 'SONAR_AUTH_TOKEN'
+                )]) {
+                    withSonarQubeEnv('SonarQube') {
+                        sh '''
+                            mvn sonar:sonar \
+                              -Dsonar.projectKey=demo-webapp \
+                              -Dsonar.projectName=demo-webapp \
+                              -Dsonar.host.url=http://localhost:9000 \
+                              -Dsonar.token=$SONAR_AUTH_TOKEN \
+                              -Dsonar.java.binaries=target/classes \
+                              -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+                              -Dsonar.coverage.exclusions=**/HelloServlet.java \
+                              -Dsonar.exclusions=**/HelloServlet.java
+                        '''
+                    }
                 }
             }
         }
@@ -98,22 +104,27 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 echo '🚦 Checking SonarQube Quality Gate...'
-                script {
-                    sleep(20)
-                    def response = sh(
-                        script: """
-                            curl -s -u "$SONAR_TOKEN:" \
-                            "http://localhost:9000/api/qualitygates/project_status?projectKey=demo-webapp"
-                        """,
-                        returnStdout: true
-                    ).trim()
-                    echo "Quality Gate response: ${response}"
-                    if (response.contains('"status":"ERROR"')) {
-                        error '❌ Quality Gate FAILED — deployment blocked!'
-                    } else if (response.contains('"status":"OK"')) {
-                        echo '✅ Quality Gate PASSED!'
-                    } else {
-                        echo '⚠️ Quality Gate status unclear — proceeding'
+                withCredentials([string(
+                    credentialsId: 'sonar-token-secret',
+                    variable: 'SONAR_AUTH_TOKEN'
+                )]) {
+                    script {
+                        sleep(20)
+                        def response = sh(
+                            script: '''
+                                curl -s -u "$SONAR_AUTH_TOKEN:" \
+                                "http://localhost:9000/api/qualitygates/project_status?projectKey=demo-webapp"
+                            ''',
+                            returnStdout: true
+                        ).trim()
+                        echo "Quality Gate response: ${response}"
+                        if (response.contains('"status":"ERROR"')) {
+                            error '❌ Quality Gate FAILED — deployment blocked!'
+                        } else if (response.contains('"status":"OK"')) {
+                            echo '✅ Quality Gate PASSED!'
+                        } else {
+                            echo '⚠️ Quality Gate status unclear — proceeding'
+                        }
                     }
                 }
             }
