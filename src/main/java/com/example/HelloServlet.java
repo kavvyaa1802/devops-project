@@ -6,20 +6,37 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @WebServlet("/hello")
 public class HelloServlet extends HttpServlet {
-    private static final String BUILD_VERSION = "1.0.0";
     private static final String PIPELINE = "Jenkins → Maven → SonarQube → Tomcat";
     private static final String CLOSE_SPAN_DIV = "</span></div>";
     private static final String OPEN_INFO_ROW = "<div class='info-row'><span class='info-label'>";
     private static final String MID_INFO_ROW = "</span><span class='info-value'>";
     private static final Logger LOGGER = Logger.getLogger(HelloServlet.class.getName());
+
+    private String getBuildVersion() {
+        Properties props = new Properties();
+        try {
+            InputStream is = getServletContext().getResourceAsStream("/build.properties");
+            if (is != null) {
+                props.load(is);
+                return props.getProperty("app.version", "1.0.0");
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Could not load build.properties", e);
+        }
+        return "1.0.0";
+    }
+
+    public String getPipeline() { return PIPELINE; }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -30,6 +47,7 @@ public class HelloServlet extends HttpServlet {
             String time = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             String clientIp = req.getRemoteAddr();
+            String version = getBuildVersion();
 
             out.println("<!DOCTYPE html><html><head><title>Pipeline Servlet</title>");
             out.println("<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM' crossorigin='anonymous'>");
@@ -46,7 +64,7 @@ public class HelloServlet extends HttpServlet {
             out.println("<p style='color:#94a3b8' class='mb-4'>Deployed via Jenkins CI/CD Pipeline</p>");
             out.println("<div class='info-card'>");
             out.println(OPEN_INFO_ROW + "Message" + MID_INFO_ROW + "Hello from Jenkins CI/CD Pipeline!" + CLOSE_SPAN_DIV);
-            out.println(OPEN_INFO_ROW + "Build Version" + MID_INFO_ROW + BUILD_VERSION + CLOSE_SPAN_DIV);
+            out.println(OPEN_INFO_ROW + "Build Version" + MID_INFO_ROW + version + CLOSE_SPAN_DIV);
             out.println(OPEN_INFO_ROW + "Pipeline" + MID_INFO_ROW + PIPELINE + CLOSE_SPAN_DIV);
             out.println(OPEN_INFO_ROW + "Timestamp" + MID_INFO_ROW + time + CLOSE_SPAN_DIV);
             out.println(OPEN_INFO_ROW + "Client IP" + MID_INFO_ROW + clientIp + CLOSE_SPAN_DIV);
@@ -60,7 +78,4 @@ public class HelloServlet extends HttpServlet {
             }
         }
     }
-
-    public String getBuildVersion() { return BUILD_VERSION; }
-    public String getPipeline() { return PIPELINE; }
 }

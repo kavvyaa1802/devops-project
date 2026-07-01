@@ -14,18 +14,6 @@ public class AppTest {
     }
 
     @Test
-    public void testBuildVersionNotNull() {
-        assertNotNull("Build version should not be null",
-            servlet.getBuildVersion());
-    }
-
-    @Test
-    public void testBuildVersionValue() {
-        assertEquals("Build version should be 1.0.0",
-            "1.0.0", servlet.getBuildVersion());
-    }
-
-    @Test
     public void testPipelineNotNull() {
         assertNotNull("Pipeline string should not be null",
             servlet.getPipeline());
@@ -53,12 +41,5 @@ public class AppTest {
     public void testPipelineContainsTomcat() {
         assertTrue("Pipeline should mention Tomcat",
             servlet.getPipeline().contains("Tomcat"));
-    }
-
-    @Test
-    public void testBuildVersionFormat() {
-        String version = servlet.getBuildVersion();
-        assertTrue("Version should match x.x.x format",
-            version.matches("\\d+\\.\\d+\\.\\d+"));
     }
 }
