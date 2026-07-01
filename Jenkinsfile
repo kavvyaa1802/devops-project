@@ -10,7 +10,6 @@ pipeline {
         SONAR_PROJECT_KEY = 'demo-webapp'
         TOMCAT_URL = 'http://localhost:8081'
         WAR_FILE = 'target/demo-webapp.war'
-        TOMCAT_HOME = '/opt/tomcat/apache-tomcat-10.1.56'
     }
 
     stages {
@@ -65,11 +64,11 @@ pipeline {
                     usernameVariable: 'TOMCAT_USER',
                     passwordVariable: 'TOMCAT_PASS'
                 )]) {
-                    sh """
-                        curl -u ${TOMCAT_USER}:${TOMCAT_PASS} \
-                          -T ${WAR_FILE} \
+                    sh '''
+                        curl -u "$TOMCAT_USER:$TOMCAT_PASS" \
+                          -T target/demo-webapp.war \
                           "http://localhost:8081/manager/text/deploy?path=/demo-webapp&update=true"
-                    """
+                    '''
                 }
             }
             post {
