@@ -81,7 +81,7 @@ pipeline {
             steps {
                 echo '🔍 Running SonarQube analysis...'
                 withCredentials([string(
-                    credentialsId: 'sonar-token-secret',
+                    credentialsId: 'sonar-token',
                     variable: 'SONAR_AUTH_TOKEN'
                 )]) {
                     withSonarQubeEnv('SonarQube') {
@@ -105,7 +105,7 @@ pipeline {
             steps {
                 echo '🚦 Checking SonarQube Quality Gate...'
                 withCredentials([string(
-                    credentialsId: 'sonar-token-secret',
+                    credentialsId: 'sonar-token',
                     variable: 'SONAR_AUTH_TOKEN'
                 )]) {
                     script {
