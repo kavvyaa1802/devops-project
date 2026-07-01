@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/hello")
 public class HelloServlet extends HttpServlet {
@@ -17,6 +19,7 @@ public class HelloServlet extends HttpServlet {
     private static final String CLOSE_SPAN_DIV = "</span></div>";
     private static final String OPEN_INFO_ROW = "<div class='info-row'><span class='info-label'>";
     private static final String MID_INFO_ROW = "</span><span class='info-value'>";
+    private static final Logger LOGGER = Logger.getLogger(HelloServlet.class.getName());
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -51,8 +54,10 @@ public class HelloServlet extends HttpServlet {
             out.println("<a href='.' class='btn btn-primary mt-4'>← Back to Home</a>");
             out.println("</div></body></html>");
         } catch (IOException e) {
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                "Error generating response: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Error generating servlet response", e);
+            if (!resp.isCommitted()) {
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            }
         }
     }
 
