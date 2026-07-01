@@ -99,7 +99,7 @@ pipeline {
             steps {
                 echo '🚦 Checking SonarQube Quality Gate...'
                 script {
-                    sleep(10)
+                    sleep(20)
                     def response = sh(
                         script: """
                             curl -s -u "$SONAR_TOKEN:" \

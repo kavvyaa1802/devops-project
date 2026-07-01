@@ -15,31 +15,31 @@ public class AppTest {
 
     @Test
     public void testPipelineNotNull() {
-        assertNotNull("Pipeline string should not be null",
-            servlet.getPipeline());
+        assertNotNull(servlet.getPipeline());
     }
 
     @Test
     public void testPipelineContainsJenkins() {
-        assertTrue("Pipeline should mention Jenkins",
-            servlet.getPipeline().contains("Jenkins"));
+        assertTrue(servlet.getPipeline().contains("Jenkins"));
     }
 
     @Test
     public void testPipelineContainsMaven() {
-        assertTrue("Pipeline should mention Maven",
-            servlet.getPipeline().contains("Maven"));
+        assertTrue(servlet.getPipeline().contains("Maven"));
     }
 
     @Test
     public void testPipelineContainsSonarQube() {
-        assertTrue("Pipeline should mention SonarQube",
-            servlet.getPipeline().contains("SonarQube"));
+        assertTrue(servlet.getPipeline().contains("SonarQube"));
     }
 
     @Test
     public void testPipelineContainsTomcat() {
-        assertTrue("Pipeline should mention Tomcat",
-            servlet.getPipeline().contains("Tomcat"));
+        assertTrue(servlet.getPipeline().contains("Tomcat"));
+    }
+
+    @Test
+    public void testPipelineNotEmpty() {
+        assertFalse(servlet.getPipeline().isEmpty());
     }
 }
