@@ -10,6 +10,7 @@ pipeline {
         SONAR_PROJECT_KEY = 'demo-webapp'
         TOMCAT_URL = 'http://localhost:8081'
         WAR_FILE = 'target/demo-webapp.war'
+        TOMCAT_HOME = '/opt/tomcat/apache-tomcat-10.1.56'
     }
 
     stages {
@@ -59,21 +60,28 @@ pipeline {
         stage('Deploy to Tomcat') {
             steps {
                 echo '🚀 Deploying to Apache Tomcat...'
-                deploy adapters: [
-                    tomcat9(
-                        credentialsId: 'tomcat-credentials',
-                        path: '/demo-webapp',
-                        url: "${TOMCAT_URL}"
-                    )
-                ], contextPath: '/demo-webapp', war: "${WAR_FILE}"
+                withCredentials([usernamePassword(
+                    credentialsId: 'tomcat-credentials',
+                    usernameVariable: 'TOMCAT_USER',
+                    passwordVariable: 'TOMCAT_PASS'
+                )]) {
+                    sh """
+                        curl -u ${TOMCAT_USER}:${TOMCAT_PASS} \
+                          -T ${WAR_FILE} \
+                          "http://localhost:8081/manager/text/deploy?path=/demo-webapp&update=true"
+                    """
+                }
+            }
+            post {
+                success { echo '✅ Deployed to http://100.49.158.149:8081/demo-webapp/' }
+                failure { echo '❌ Deployment failed' }
             }
         }
-
     }
 
     post {
         success {
-            echo '🎉 Pipeline completed! App live at http://100.49.158.149:8081/demo-webapp/'
+            echo '🎉 Pipeline complete! http://100.49.158.149:8081/demo-webapp/'
         }
         failure {
             echo '💥 Pipeline failed — check logs above'
