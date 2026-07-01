@@ -44,14 +44,15 @@ pipeline {
             steps {
                 echo '🔍 Running SonarQube analysis...'
                 withSonarQubeEnv('SonarQube') {
-                    sh """
+                    sh '''
                         mvn sonar:sonar \
                           -Dsonar.projectKey=demo-webapp \
                           -Dsonar.projectName=demo-webapp \
                           -Dsonar.host.url=http://localhost:9000 \
                           -Dsonar.token=sqp_e2d3a5363477db7cb5fb8b01053170e541700a25 \
-                          -Dsonar.java.binaries=target/classes
-                    """
+                          -Dsonar.java.binaries=target/classes \
+                          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+                    '''
                 }
             }
         }
