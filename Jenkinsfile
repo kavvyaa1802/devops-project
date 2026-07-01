@@ -11,7 +11,7 @@ pipeline {
         TOMCAT_URL = 'http://localhost:8081'
         APP_URL = 'http://100.49.158.149:8081/demo-webapp/'
         SONAR_URL = 'http://100.49.158.149:9000/dashboard?id=demo-webapp'
-        SONAR_TOKEN = 'sqp_e2d3a5363477db7cb5fb8b01053170e541700a25'
+        SONAR_TOKEN = 'squ_474a851fa42d8bea09978e0334144727f6bf791c'
     }
 
     options {
@@ -87,7 +87,7 @@ pipeline {
                           -Dsonar.projectKey=demo-webapp \
                           -Dsonar.projectName=demo-webapp \
                           -Dsonar.host.url=http://localhost:9000 \
-                          -Dsonar.token=sqp_e2d3a5363477db7cb5fb8b01053170e541700a25 \
+                          -Dsonar.token=squ_474a851fa42d8bea09978e0334144727f6bf791c \
                           -Dsonar.java.binaries=target/classes \
                           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
                     '''
