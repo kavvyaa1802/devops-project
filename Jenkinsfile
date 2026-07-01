@@ -35,6 +35,10 @@ pipeline {
                         script: 'git log -1 --pretty=%an',
                         returnStdout: true
                     ).trim()
+                    env.BUILD_TIMESTAMP = sh(
+                        script: 'date "+%Y-%m-%d %H:%M:%S UTC"',
+                        returnStdout: true
+                    ).trim()
                 }
                 echo "📝 Commit: ${env.GIT_COMMIT_MSG}"
                 echo "👤 Author: ${env.GIT_AUTHOR}"
@@ -44,6 +48,17 @@ pipeline {
         stage('Build') {
             steps {
                 echo '🔨 Building with Maven...'
+                sh '''
+                    # Write build info into the app before packaging
+                    mkdir -p src/main/webapp/WEB-INF
+                    cat > src/main/webapp/build.properties << PROPS
+build.number=${BUILD_NUMBER}
+build.timestamp=${BUILD_TIMESTAMP}
+git.author=${GIT_AUTHOR}
+git.commit=${GIT_COMMIT_MSG}
+app.version=1.0.${BUILD_NUMBER}
+PROPS
+                '''
                 sh 'mvn clean package -DskipTests'
             }
             post {
@@ -122,17 +137,14 @@ pipeline {
 
         stage('Smoke Test') {
             steps {
-                echo '🔥 Running smoke test on deployed app...'
+                echo '🔥 Running smoke test...'
                 sh '''
                     sleep 5
                     HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
                         http://localhost:8081/demo-webapp/)
-                    echo "HTTP Response Code: $HTTP_CODE"
-                    if [ "$HTTP_CODE" != "200" ]; then
-                        echo "❌ Smoke test failed! App returned $HTTP_CODE"
-                        exit 1
-                    fi
-                    echo "✅ Smoke test passed! App is live and responding."
+                    echo "HTTP Response: $HTTP_CODE"
+                    [ "$HTTP_CODE" = "200" ] || exit 1
+                    echo "✅ Smoke test passed!"
                 '''
             }
         }
@@ -144,10 +156,10 @@ pipeline {
             ╔══════════════════════════════════════════╗
             ║     🎉 PIPELINE SUCCEEDED 🎉              ║
             ╠══════════════════════════════════════════╣
-            ║  App URL  : ${env.APP_URL}
-            ║  Sonar    : ${env.SONAR_URL}
-            ║  Build    : #${env.BUILD_NUMBER}
-            ║  Author   : ${env.GIT_AUTHOR}
+            ║  App    : ${env.APP_URL}
+            ║  Sonar  : ${env.SONAR_URL}
+            ║  Build  : #${env.BUILD_NUMBER}
+            ║  Author : ${env.GIT_AUTHOR}
             ╚══════════════════════════════════════════╝
             """
         }
@@ -156,13 +168,11 @@ pipeline {
             ╔══════════════════════════════════════════╗
             ║     💥 PIPELINE FAILED 💥                 ║
             ╠══════════════════════════════════════════╣
-            ║  Build    : #${env.BUILD_NUMBER}
-            ║  Check console output for details
+            ║  Build  : #${env.BUILD_NUMBER}
             ╚══════════════════════════════════════════╝
             """
         }
         always {
-            echo '🧹 Cleaning up workspace...'
             cleanWs()
         }
     }

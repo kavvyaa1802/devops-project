@@ -1,14 +1,29 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.time.LocalDateTime, java.time.format.DateTimeFormatter" %>
+<%@ page import="java.time.LocalDateTime, java.time.format.DateTimeFormatter, java.util.Properties, java.io.InputStream" %>
+<%
+    // Load build info
+    Properties buildProps = new Properties();
+    try {
+        InputStream is = application.getResourceAsStream("/build.properties");
+        if (is != null) buildProps.load(is);
+    } catch (Exception e) { /* ignore */ }
+    String buildNumber = buildProps.getProperty("build.number", "dev");
+    String buildTimestamp = buildProps.getProperty("build.timestamp", "local build");
+    String gitAuthor = buildProps.getProperty("git.author", "Kavya Sri Nallani");
+    String appVersion = buildProps.getProperty("app.version", "1.0.0");
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DevOps Pipeline Demo — Kavya Sri Nallani</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
+        crossorigin="anonymous">
   <style>
-    body { background: #0f172a; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; }
+    body { background: #0f172a; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; margin: 0; }
     .hero { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); padding: 80px 0 60px; }
     .badge-tool { font-size: 0.95rem; padding: 8px 16px; border-radius: 20px; margin: 4px; display: inline-block; }
     .author-badge { background: #1e293b; border: 1px solid #3b82f6; border-radius: 30px; padding: 8px 20px; display: inline-block; margin-bottom: 24px; }
@@ -19,13 +34,14 @@
     .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #22c55e; display: inline-block; margin-right: 6px; animation: pulse 2s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
     .stat-card { background: #0f172a; border-radius: 10px; padding: 20px; text-align: center; }
-    .tool-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; text-align: center; transition: all 0.2s; text-decoration: none; display: block; }
+    .tool-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; text-align: center; transition: all 0.2s; text-decoration: none; display: block; height: 100%; }
     .tool-card:hover { transform: translateY(-4px); border-color: #3b82f6; background: #1e3a5f; text-decoration: none; }
-    .tool-card .tool-icon { font-size: 2.5rem; margin-bottom: 12px; }
-    .tool-card .tool-name { font-weight: 700; font-size: 1.1rem; color: #f1f5f9; }
-    .tool-card .tool-desc { color: #94a3b8; font-size: 0.85rem; margin-top: 4px; }
-    .tool-card .tool-badge { font-size: 0.75rem; padding: 3px 10px; border-radius: 20px; margin-top: 10px; display: inline-block; }
-    footer { background: #020617; padding: 24px 0; color: #64748b; font-size: 0.85rem; }
+    .tool-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .tool-name { font-weight: 700; font-size: 1.1rem; color: #f1f5f9; }
+    .tool-desc { color: #94a3b8; font-size: 0.85rem; margin-top: 4px; }
+    .tool-badge { font-size: 0.75rem; padding: 3px 10px; border-radius: 20px; margin-top: 10px; display: inline-block; }
+    .build-banner { background: #0f172a; border-top: 1px solid #334155; padding: 12px 0; font-size: 0.82rem; color: #64748b; }
+    footer { background: #020617; padding: 24px 0; color: #64748b; font-size: 0.85rem; border-top: 1px solid #1e293b; }
   </style>
 </head>
 <body>
@@ -33,7 +49,9 @@
 <!-- Hero -->
 <div class="hero text-center">
   <div class="container">
-    <span class="badge bg-success mb-3"><span class="status-dot"></span>Pipeline Active</span>
+    <span class="badge bg-success mb-3">
+      <span class="status-dot"></span>Pipeline Active
+    </span>
     <h1 class="display-4 fw-bold text-white mb-2">DevOps CI/CD Pipeline</h1>
     <div class="mb-3">
       <span class="author-badge">
@@ -50,6 +68,16 @@
       <span class="badge-tool bg-secondary text-white">AWS EC2</span>
       <span class="badge-tool" style="background:#24292e;color:white">GitHub</span>
     </div>
+  </div>
+</div>
+
+<!-- Build Info Banner -->
+<div class="build-banner text-center">
+  <div class="container">
+    <span class="me-3">🔨 <strong style="color:#60a5fa">Build #<%= buildNumber %></strong></span>
+    <span class="me-3">📦 <strong style="color:#22c55e">v<%= appVersion %></strong></span>
+    <span class="me-3">🕐 Deployed: <strong style="color:#e2e8f0"><%= buildTimestamp %></strong></span>
+    <span>👤 <strong style="color:#e2e8f0"><%= gitAuthor %></strong></span>
   </div>
 </div>
 
@@ -95,7 +123,7 @@
   </div>
 </div>
 
-<!-- Tool Links — Strategy 2 -->
+<!-- Tool Links -->
 <div class="container my-5">
   <h3 class="text-center text-white mb-4">🛠️ Pipeline Tools</h3>
   <div class="row g-4">
@@ -134,7 +162,7 @@
   </div>
 </div>
 
-<!-- Live Server Info -->
+<!-- Live Deployment Info -->
 <div class="container my-5">
   <div class="card-dark p-4">
     <h5 class="text-white mb-3">📊 Live Deployment Info</h5>
@@ -142,7 +170,7 @@
       <div class="col-md-3">
         <div class="stat-card">
           <div class="text-secondary small">Server Time</div>
-          <div class="text-white fw-bold mt-1">
+          <div class="text-white fw-bold mt-1" id="live-clock">
             <%= LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")) %>
           </div>
         </div>
@@ -166,6 +194,10 @@
         </div>
       </div>
     </div>
+    <div class="text-center mt-4">
+      <a href="hello" class="btn btn-primary me-2">Test Servlet →</a>
+      <a href="about.jsp" class="btn btn-outline-light">About This Project →</a>
+    </div>
   </div>
 </div>
 
@@ -179,9 +211,26 @@
       <span style="color:#475569;margin:0 8px;">·</span>
       <span>AWS EC2 · Jenkins · Maven · SonarQube · Tomcat</span>
     </div>
+    <div style="color:#334155;font-size:0.78rem;margin-top:6px;">
+      v<%= appVersion %> · Build #<%= buildNumber %> · <%= buildTimestamp %>
+    </div>
   </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+        crossorigin="anonymous"></script>
+<script>
+  // Auto-refresh clock every second
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    const el = document.getElementById('live-clock');
+    if (el) el.textContent = h + ':' + m + ':' + s;
+  }
+  setInterval(updateClock, 1000);
+</script>
 </body>
 </html>
