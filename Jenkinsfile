@@ -11,6 +11,7 @@ pipeline {
         TOMCAT_URL = 'http://localhost:8081'
         APP_URL = 'http://100.49.158.149:8081/demo-webapp/'
         SONAR_URL = 'http://100.49.158.149:9000/dashboard?id=demo-webapp'
+        SONAR_TOKEN = credentials('sonar-token')
     }
 
     options {
@@ -80,23 +81,18 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo '🔍 Running SonarQube analysis...'
-                withCredentials([string(
-                    credentialsId: 'sonar-token',
-                    variable: 'SONAR_AUTH_TOKEN'
-                )]) {
-                    withSonarQubeEnv('SonarQube') {
-                        sh '''
-                            mvn sonar:sonar \
-                              -Dsonar.projectKey=demo-webapp \
-                              -Dsonar.projectName=demo-webapp \
-                              -Dsonar.host.url=http://localhost:9000 \
-                              -Dsonar.token=$SONAR_AUTH_TOKEN \
-                              -Dsonar.java.binaries=target/classes \
-                              -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-                              -Dsonar.coverage.exclusions=**/HelloServlet.java \
-                              -Dsonar.exclusions=**/HelloServlet.java
-                        '''
-                    }
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                        mvn sonar:sonar \
+                          -Dsonar.projectKey=demo-webapp \
+                          -Dsonar.projectName=demo-webapp \
+                          -Dsonar.host.url=http://localhost:9000 \
+                          -Dsonar.token=$SONAR_TOKEN \
+                          -Dsonar.java.binaries=target/classes \
+                          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+                          -Dsonar.coverage.exclusions=**/HelloServlet.java \
+                          -Dsonar.exclusions=**/HelloServlet.java
+                    '''
                 }
             }
         }
@@ -104,27 +100,22 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 echo '🚦 Checking SonarQube Quality Gate...'
-                withCredentials([string(
-                    credentialsId: 'sonar-token',
-                    variable: 'SONAR_AUTH_TOKEN'
-                )]) {
-                    script {
-                        sleep(20)
-                        def response = sh(
-                            script: '''
-                                curl -s -u "$SONAR_AUTH_TOKEN:" \
-                                "http://localhost:9000/api/qualitygates/project_status?projectKey=demo-webapp"
-                            ''',
-                            returnStdout: true
-                        ).trim()
-                        echo "Quality Gate response: ${response}"
-                        if (response.contains('"status":"ERROR"')) {
-                            error '❌ Quality Gate FAILED — deployment blocked!'
-                        } else if (response.contains('"status":"OK"')) {
-                            echo '✅ Quality Gate PASSED!'
-                        } else {
-                            echo '⚠️ Quality Gate status unclear — proceeding'
-                        }
+                script {
+                    sleep(20)
+                    def response = sh(
+                        script: '''
+                            curl -s -u "$SONAR_TOKEN:" \
+                            "http://localhost:9000/api/qualitygates/project_status?projectKey=demo-webapp"
+                        ''',
+                        returnStdout: true
+                    ).trim()
+                    echo "Quality Gate response: ${response}"
+                    if (response.contains('"status":"ERROR"')) {
+                        error '❌ Quality Gate FAILED — deployment blocked!'
+                    } else if (response.contains('"status":"OK"')) {
+                        echo '✅ Quality Gate PASSED!'
+                    } else {
+                        echo '⚠️ Quality Gate status unclear — proceeding'
                     }
                 }
             }
