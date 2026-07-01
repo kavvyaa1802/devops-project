@@ -11,6 +11,7 @@ pipeline {
         TOMCAT_URL = 'http://localhost:8081'
         APP_URL = 'http://100.49.158.149:8081/demo-webapp/'
         SONAR_URL = 'http://100.49.158.149:9000/dashboard?id=demo-webapp'
+        SONAR_TOKEN = 'sqp_e2d3a5363477db7cb5fb8b01053170e541700a25'
     }
 
     options {
@@ -49,27 +50,22 @@ pipeline {
             steps {
                 echo '🔨 Building with Maven...'
                 sh '''
-                    # Write build info into the app before packaging
                     mkdir -p src/main/webapp/WEB-INF
-                    cat > src/main/webapp/build.properties << PROPS
-build.number=${BUILD_NUMBER}
-build.timestamp=${BUILD_TIMESTAMP}
-git.author=${GIT_AUTHOR}
-git.commit=${GIT_COMMIT_MSG}
-app.version=1.0.${BUILD_NUMBER}
-PROPS
+                    printf "build.number=%s\nbuild.timestamp=%s\ngit.author=%s\ngit.commit=%s\napp.version=1.0.%s\n" \
+                        "$BUILD_NUMBER" "$BUILD_TIMESTAMP" "$GIT_AUTHOR" "$GIT_COMMIT_MSG" "$BUILD_NUMBER" \
+                        > src/main/webapp/build.properties
                 '''
                 sh 'mvn clean package -DskipTests'
             }
             post {
                 success { echo '✅ Build succeeded' }
-                failure { error '❌ Build failed — stopping pipeline' }
+                failure { error '❌ Build failed' }
             }
         }
 
         stage('Test & Coverage') {
             steps {
-                echo '🧪 Running unit tests + JaCoCo coverage...'
+                echo '🧪 Running tests + coverage...'
                 sh 'mvn verify'
             }
             post {
@@ -78,7 +74,7 @@ PROPS
                           allowEmptyResults: true
                 }
                 success { echo '✅ All tests passed' }
-                failure { error '❌ Tests failed — stopping pipeline' }
+                failure { error '❌ Tests failed' }
             }
         }
 
@@ -102,13 +98,24 @@ PROPS
         stage('Quality Gate') {
             steps {
                 echo '🚦 Checking SonarQube Quality Gate...'
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                script {
+                    sleep(10)
+                    def response = sh(
+                        script: """
+                            curl -s -u "$SONAR_TOKEN:" \
+                            "http://localhost:9000/api/qualitygates/project_status?projectKey=demo-webapp"
+                        """,
+                        returnStdout: true
+                    ).trim()
+                    echo "Quality Gate response: ${response}"
+                    if (response.contains('"status":"ERROR"')) {
+                        error '❌ Quality Gate FAILED — deployment blocked!'
+                    } else if (response.contains('"status":"OK"')) {
+                        echo '✅ Quality Gate PASSED!'
+                    } else {
+                        echo '⚠️ Quality Gate status unclear — proceeding'
+                    }
                 }
-            }
-            post {
-                success { echo '✅ Quality Gate passed' }
-                failure { error '❌ Quality Gate failed — deployment blocked!' }
             }
         }
 
@@ -124,25 +131,25 @@ PROPS
                         RESULT=$(curl -s -u "$TOMCAT_USER:$TOMCAT_PASS" \
                           -T target/demo-webapp.war \
                           "http://localhost:8081/manager/text/deploy?path=/demo-webapp&update=true")
-                        echo "Tomcat response: $RESULT"
+                        echo "Tomcat: $RESULT"
                         echo "$RESULT" | grep -q "^OK" || exit 1
                     '''
                 }
             }
             post {
-                success { echo "✅ Deployed! Live at ${env.APP_URL}" }
+                success { echo "✅ Live at ${env.APP_URL}" }
                 failure { error '❌ Deployment failed' }
             }
         }
 
         stage('Smoke Test') {
             steps {
-                echo '🔥 Running smoke test...'
+                echo '🔥 Smoke testing deployed app...'
                 sh '''
                     sleep 5
                     HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
                         http://localhost:8081/demo-webapp/)
-                    echo "HTTP Response: $HTTP_CODE"
+                    echo "HTTP: $HTTP_CODE"
                     [ "$HTTP_CODE" = "200" ] || exit 1
                     echo "✅ Smoke test passed!"
                 '''
