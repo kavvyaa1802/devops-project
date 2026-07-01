@@ -19,17 +19,38 @@ public class PipelineInfoTest {
     }
 
     @Test
-    public void testGetStack() {
+    public void testGetStackNotNull() {
         assertNotNull(info.getStack());
+    }
+
+    @Test
+    public void testGetStackContainsJenkins() {
         assertTrue(info.getStack().contains("Jenkins"));
+    }
+
+    @Test
+    public void testGetStackContainsMaven() {
         assertTrue(info.getStack().contains("Maven"));
+    }
+
+    @Test
+    public void testGetStackContainsSonarQube() {
         assertTrue(info.getStack().contains("SonarQube"));
+    }
+
+    @Test
+    public void testGetStackContainsTomcat() {
         assertTrue(info.getStack().contains("Tomcat"));
     }
 
     @Test
     public void testGetAuthor() {
         assertEquals("Kavya Sri Nallani", info.getAuthor());
+    }
+
+    @Test
+    public void testGetAuthorNotNull() {
+        assertNotNull(info.getAuthor());
     }
 
     @Test
@@ -42,8 +63,7 @@ public class PipelineInfoTest {
     public void testGetCurrentTime() {
         String time = info.getCurrentTime();
         assertNotNull(time);
-        assertTrue("Time should match format",
-            time.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}"));
+        assertTrue(time.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}"));
     }
 
     @Test
@@ -81,5 +101,17 @@ public class PipelineInfoTest {
     public void testFormatDeploymentInfoNullContainer() {
         String result = info.formatDeploymentInfo("localhost", null);
         assertEquals("Unknown deployment", result);
+    }
+
+    @Test
+    public void testFormatDeploymentInfoBothNull() {
+        String result = info.formatDeploymentInfo(null, null);
+        assertEquals("Unknown deployment", result);
+    }
+
+    @Test
+    public void testVersionFormat() {
+        String version = info.getVersion();
+        assertTrue(info.isVersionValid(version));
     }
 }
