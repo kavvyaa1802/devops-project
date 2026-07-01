@@ -26,10 +26,6 @@ pipeline {
                 echo '🔨 Building with Maven...'
                 sh 'mvn clean package -DskipTests'
             }
-            post {
-                success { echo '✅ Build successful' }
-                failure { echo '❌ Build failed' }
-            }
         }
 
         stage('Test') {
@@ -50,8 +46,10 @@ pipeline {
                 withSonarQubeEnv('SonarQube') {
                     sh """
                         mvn sonar:sonar \
-                          -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                          -Dsonar.projectName='demo-webapp' \
+                          -Dsonar.projectKey=demo-webapp \
+                          -Dsonar.projectName=demo-webapp \
+                          -Dsonar.host.url=http://localhost:9000 \
+                          -Dsonar.token=sqp_e2d3a5363477db7cb5fb8b01053170e541700a25 \
                           -Dsonar.java.binaries=target/classes
                     """
                 }
@@ -69,17 +67,13 @@ pipeline {
                     )
                 ], contextPath: '/demo-webapp', war: "${WAR_FILE}"
             }
-            post {
-                success { echo '✅ Deployed successfully to Tomcat' }
-                failure { echo '❌ Deployment failed' }
-            }
         }
 
     }
 
     post {
         success {
-            echo '🎉 Pipeline completed successfully! App live at http://100.49.158.149:8081/demo-webapp/'
+            echo '🎉 Pipeline completed! App live at http://100.49.158.149:8081/demo-webapp/'
         }
         failure {
             echo '💥 Pipeline failed — check logs above'
