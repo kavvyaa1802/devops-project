@@ -50,7 +50,7 @@
 <div class="hero text-center">
   <div class="container">
     <span class="badge bg-success mb-3">
-      <span class="status-dot"></span>Pipeline Active
+      <span class="status-dot"></span>Pipeline Live
     </span>
     <h1 class="display-4 fw-bold text-white mb-2">DevOps CI/CD Pipeline</h1>
     <div class="mb-3">
